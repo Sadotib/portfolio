@@ -112,12 +112,12 @@ function checkOffsets() {
   }
 }
 
-const debugToggle = document.querySelector(".debug-toggle");
-function onDebugToggle() {
-  document.body.classList.toggle("debug", debugToggle.checked);
-}
-debugToggle.addEventListener("change", onDebugToggle);
-onDebugToggle();
+// const debugToggle = document.querySelector(".debug-toggle");
+// function onDebugToggle() {
+//   document.body.classList.toggle("debug", debugToggle.checked);
+// }
+// debugToggle.addEventListener("change", onDebugToggle);
+// onDebugToggle();
 
 /* =========================
    THEME TOGGLE (RADIO UI)
@@ -141,39 +141,49 @@ function initThemeToggle() {
   }
 
   radios.forEach((radio) => {
-    radio.addEventListener("change", () => {
-      root.dataset.theme = radio.value;
-      localStorage.setItem("theme", radio.value);
-    });
+  radio.addEventListener("change", () => {
+    root.setAttribute("data-theme", radio.value);
+    localStorage.setItem("theme", radio.value);
   });
+});
 }
 
 function initBackgroundMusic() {
   const audio = document.getElementById("bg-music");
-  const toggle = document.getElementById("music-toggle");
+  const button = document.getElementById("music-toggle");
 
-  if (!audio || !toggle) return;
+  if (!audio || !button) return;
 
-  // Restore previous state
-  const isMuted = localStorage.getItem("music-muted") === "true";
-  audio.muted = isMuted;
-  toggle.textContent = isMuted ? "Unmute" : "Mute";
-  toggle.setAttribute("aria-pressed", String(!isMuted));
+  // Initial state
+  audio.volume = 0.3;
+  audio.muted = true;
 
-  // Attempt autoplay (will only succeed muted)
+  const savedMuted = localStorage.getItem("music-muted") === "true";
+  audio.muted = savedMuted;
+
+  updateButton();
+
+  // Start playback (allowed because muted)
   audio.play().catch(() => {});
 
-  toggle.addEventListener("click", () => {
+  button.addEventListener("click", () => {
     audio.muted = !audio.muted;
     localStorage.setItem("music-muted", audio.muted);
 
-    toggle.textContent = audio.muted ? "Unmute" : "Mute";
-    toggle.setAttribute("aria-pressed", String(!audio.muted));
+    // Ensure playback after user gesture
+    if (!audio.muted) {
+      audio.play().catch(() => {});
+    }
 
-    // Required for some browsers: ensure play after interaction
-    audio.play().catch(() => {});
+    updateButton();
   });
+
+  function updateButton() {
+    button.textContent = audio.muted ? "Unmute" : "Mute";
+    button.setAttribute("aria-pressed", String(!audio.muted));
+  }
 }
+
 
 window.addEventListener("DOMContentLoaded", () => {
   initThemeToggle();
